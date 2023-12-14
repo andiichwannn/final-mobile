@@ -49,10 +49,11 @@ class DetailActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         selectedMovie = intent.getParcelableExtra("MOVIE")
         setContent {
+            val darkCustomColor = Color(20, 20, 20)
             FinalmobileTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = darkCustomColor
                 ) {
                     DetailScreen()
                 }
@@ -82,8 +83,7 @@ class DetailActivity : ComponentActivity() {
                         contentDescription = selectedMovie?.title,
                         modifier = Modifier
                             .width(480.dp)
-                            .height(240.dp)
-                            .clip(MaterialTheme.shapes.medium),
+                            .height(240.dp),
                         contentScale = ContentScale.Crop
                     )
                 }

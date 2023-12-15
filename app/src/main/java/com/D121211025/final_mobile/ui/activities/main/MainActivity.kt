@@ -19,9 +19,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -41,6 +46,8 @@ import com.D121211025.final_mobile.ui.activities.detail.DetailActivity
 import com.D121211025.final_mobile.ui.theme.FinalmobileTheme
 
 class MainActivity : ComponentActivity() {
+    private var searchText by mutableStateOf("")
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +73,7 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                         val mainViewModel: MainViewModel = viewModel(factory = MainViewModel.Factory)
-                        ListMoviesScreen(mainViewModel.mainUiState)
+                        ListMoviesScreen(mainViewModel.mainUiState, searchText)
                     }
 
                 }
@@ -74,12 +81,27 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    private fun ListMoviesScreen(mainUiState: MainUiState, modifier: Modifier = Modifier) {
-        when (mainUiState) {
-            is MainUiState.Loading -> CenterText(text = "Loading...")
-            is MainUiState.Error -> CenterText(text = "Something Error")
-            is MainUiState.Success -> MovieList(mainUiState.movies)
+    private fun ListMoviesScreen(mainUiState: MainUiState, searchText: String, modifier: Modifier = Modifier) {
+        var searchText by remember { mutableStateOf("") }
+
+        Column(modifier) {
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = { searchText = it },
+                label = { Text("Cari judul film disini...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(64.dp)
+            )
+
+            when (mainUiState) {
+                is MainUiState.Loading -> CenterText(text = "Loading...")
+                is MainUiState.Error -> CenterText(text = "Something Error")
+                is MainUiState.Success -> MovieList(mainUiState.movies, searchText)
+            }
         }
     }
 
@@ -98,9 +120,17 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun MovieList(movies: List<Result>, modifier: Modifier = Modifier) {
+    fun MovieList(movies: List<Result>, searchText: String, modifier: Modifier = Modifier) {
+        val filteredMovies = if (searchText.isNotBlank()) {
+            movies.filter {
+                it.title.contains(searchText, ignoreCase = true)
+            }
+        } else {
+            movies
+        }
+
         LazyColumn(modifier = modifier) {
-            items(movies) { movie ->
+            items(filteredMovies) { movie ->
                 MovieItem(movie = movie)
             }
         }
